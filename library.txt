@@ -1,0 +1,8 @@
+Id   Title                         Author                        Genre               Year      Status    
+1    Harry Potter                  JK ROwling                    Fiction             1997      Available 
+2    The Green Mile                Stephen KIng                  Fiction             1987      Available 
+3    Atomic Habits                 James clear                   Self-Help           2019      Available 
+4    Coraline                      Neil Gaiman                   Horror              2002      Available 
+5    The Little Prince             Antonie de Saint-Exupery      Fantasy             1943      Available 
+6    The Alchemist                 Paulo Coelho                  Fiction             1988      Available 
+7    The Hobbot                    JRR Tolkein                   Fantasy             1937      Available 
