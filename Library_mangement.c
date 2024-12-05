@@ -37,33 +37,19 @@ void printBooks(int index);
 // Main function
 int main()
 {
+    loadFromFile(); // Load data at startup
+
     int choice;
-
-    // Load books from file
-    loadFromFile();
-
-    // Welcome message
-    welcomeMessage();
-
-    // Allocate initial memory
-    book = (library *)malloc(sizeof(library));
-    if (book == NULL)
-    {
-        printf("Memory allocation failed!\n");
-        exit(1);
-    }
-
     do
     {
-        printf("\n\n\t\t****** Main Menu ******");
-        printf("\n\t\t*   1. Add Book         *");
-        printf("\n\t\t*   2. View All Books   *");
-        printf("\n\t\t*   3. Search Book      *");
-        printf("\n\t\t*   4. Remove Book      *");
-        printf("\n\t\t*   5. Update Book      *");
-        printf("\n\t\t*   6. Exit             *");
-        printf("\n\t\t*************************");
-        printf("\n\t\tEnter your choice: ");
+        printf("\n***** Main Menu *****\n");
+        printf("1. Add Book\n");
+        printf("2. View All Books\n");
+        printf("3. Search Book\n");
+        printf("4. Remove Book\n");
+        printf("5. Update Book\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
         scanf("%d", &choice);
 
         switch (choice)
@@ -84,14 +70,14 @@ int main()
             updateBook();
             break;
         case 6:
-            exitProgram();
+            saveToFile(); // Save data on exit
+            printf("\nExiting program. Goodbye!\n");
             break;
         default:
-            printf("\nInvalid choice. Try again.");
+            printf("\nInvalid choice. Try again.\n");
         }
     } while (choice != 6);
 
-    free(book);
     return 0;
 }
 
@@ -101,42 +87,41 @@ void welcomeMessage()
     printf("\n\n\t*");
     printf("\n\t*             WELCOME TO THE LIBRARY         *");
     printf("\n\t*                     CSE, AMRITA            *");
-    printf("\n\t*\n");
+    printf("\n\t                                             *\n");
 }
 
 // Function to add a new book
 void addBook()
 {
-    book = (library *)realloc(book, (count + 1) * sizeof(library));
-    if (book == NULL)
+    library *temp = realloc(book, (count + 1) * sizeof(library));
+    if (temp == NULL)
     {
         printf("Memory allocation failed!\n");
-        exit(1);
+        return;
     }
+    book = temp;
 
     printf("\n\t\t** Add New Book Details ***");
     printf("\n\t\t* Enter Book Id: ");
     scanf("%d", &book[count].id);
     printf("\t\t* Enter Book Name: ");
-    getchar(); // Clear newline character from buffer
+    getchar();
     fgets(book[count].name, sizeof(book[count].name), stdin);
-    book[count].name[strcspn(book[count].name, "\n")] = 0; // Remove newline
+    book[count].name[strcspn(book[count].name, "\n")] = 0;
     printf("\t\t* Enter Book Author: ");
     fgets(book[count].author, sizeof(book[count].author), stdin);
-    book[count].author[strcspn(book[count].author, "\n")] = 0; // Remove newline
+    book[count].author[strcspn(book[count].author, "\n")] = 0;
     printf("\t\t* Enter Book Genre: ");
     fgets(book[count].details.genre, sizeof(book[count].details.genre), stdin);
-    book[count].details.genre[strcspn(book[count].details.genre, "\n")] = 0; // Remove newline
+    book[count].details.genre[strcspn(book[count].details.genre, "\n")] = 0;
     printf("\t\t* Enter Book Year: ");
     scanf("%d", &book[count].details.year);
 
-    // Set the status as "Available" when adding a new book
     strcpy(book[count].status, "Available");
 
     count++;
-    printf("\t\t**********************************");
+    printf("\t\tBook added successfully.\n");
 
-    // Save to file after addition
     saveToFile();
 }
 
@@ -145,7 +130,7 @@ void viewAllBooks()
 {
     printf("\n\t\t|************************ View All Books ********************************");
     printf("\n\t\t|-------------------------------------------------------------------------|");
-    printf("\n\t\t| Id     \tTitle\t       \tAuthor\t    \tGenre\t    \tYear\t    Status|");
+    printf("\n\t\t| Id\tTitle\tAuthor\tGenre\tYear\tStatus|");
     printf("\n\t\t|-------------------------------------------------------------------------|");
     if (count == 0)
     {
@@ -164,7 +149,7 @@ void printBooks(int index)
 {
     if (index >= count)
         return;
-    printf("\n\t\t|%d%s%s%s%d%s|", book[index].id, book[index].name,
+    printf("\n\t\t|%d\t%s\t%s\t%s\t%d\t%s|", book[index].id, book[index].name,
            book[index].author, book[index].details.genre, book[index].details.year, book[index].status);
     printBooks(index + 1);
 }
@@ -172,164 +157,148 @@ void printBooks(int index)
 // Function to search for a book by name
 void searchBook()
 {
-    char bname[50];
-    printf("\n\n\t\tEnter Book Name to Search: ");
-    getchar(); // Clear newline character from buffer
-    fgets(bname, sizeof(bname), stdin);
-    bname[strcspn(bname, "\n")] = 0; // Remove newline
+    int choice, found = 0;
+    char title[50];
+    int id;
 
-    for (int i = 0; i < count; i++)
+    printf("\nSearch Book by:\n1. ID\n2. Title\nEnter your choice: ");
+    scanf("%d", &choice);
+
+    if (choice == 1)
     {
-        if (strcasecmp(book[i].name, bname) == 0)
+        printf("Enter Book ID: ");
+        scanf("%d", &id);
+
+        for (int i = 0; i < count; i++)
         {
-            printf("\n\t\t**** Search Book Details ****");
-            printf("\n\t\t* Book Id: %d", book[i].id);
-            printf("\n\t\t* Book Name: %s", book[i].name);
-            printf("\n\t\t* Book Author: %s", book[i].author);
-            printf("\n\t\t* Book Genre: %s", book[i].details.genre);
-            printf("\n\t\t* Book Year: %d", book[i].details.year);
-            return;
+            if (book[i].id == id)
+            {
+                printf("\nBook Found:\n");
+                printf("ID: %d, Title: %s, Author: %s, Genre: %s, Year: %d, Status: %s\n",
+                       book[i].id, book[i].name, book[i].author, book[i].details.genre, book[i].details.year, book[i].status);
+                found = 1;
+                break;
+            }
         }
     }
-    printf("\n\t\tBook not found.");
+    else if (choice == 2)
+    {
+        printf("Enter Book Title: ");
+        scanf(" %[^\n]s", title);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (strcmp(book[i].name, title) == 0)
+            {
+                printf("\nBook Found:\n");
+                printf("ID: %d, Title: %s, Author: %s, Genre: %s, Year: %d, Status: %s\n",
+                       book[i].id, book[i].name, book[i].author, book[i].details.genre, book[i].details.year, book[i].status);
+                found = 1;
+                break;
+            }
+        }
+    }
+    else
+    {
+        printf("\nInvalid choice!\n");
+        return;
+    }
+
+    if (!found)
+    {
+        printf("\nBook not found.\n");
+    }
 }
 
 void removeBook()
 {
-    int choice;
-    printf("\n\n\t\tChoose how to remove the book:\n");
-    printf("\t\t1. By Book ID\n");
-    printf("\t\t2. By Book Name\n");
-    printf("\t\tEnter your choice (1 or 2): ");
-    scanf("%d", &choice);
-    getchar(); // Clear newline character from buffer
+    int id, found = 0;
+    printf("Enter Book ID to remove: ");
+    scanf("%d", &id);
 
-    if (choice == 1)
+    for (int i = 0; i < count; i++)
     {
-        int bookId;
-        printf("\n\t\tEnter Book ID to Remove: ");
-        scanf("%d", &bookId);
-        getchar(); // Clear newline character from buffer
-
-        for (int i = 0; i < count; i++)
+        if (book[i].id == id)
         {
-            if (book[i].id == bookId)
+            found = 1;
+            // Shift all books after the found index one position back
+            for (int j = i; j < count - 1; j++)
             {
-                for (int j = i; j < count - 1; j++)
-                {
-                    book[j] = book[j + 1];
-                }
-                count--;
-                book = (library *)realloc(book, count * sizeof(library));
-                if (book == NULL && count > 0)
-                {
-                    printf("Memory allocation failed!\n");
-                    exit(1);
-                }
-                printf("\n\t\tBook removed successfully.\n");
-
-                // Save to file after removal
-                saveToFile();
-                return;
+                book[j] = book[j + 1];
             }
+            count--;
+            printf("\nBook with ID %d removed successfully.\n", id);
+            saveToFile(); // Save updated data
+            break;
         }
-        printf("\n\t\tBook not found.");
     }
-    else if (choice == 2)
-    {
-        char bname[50];
-        printf("\n\t\tEnter Book Name to Remove: ");
-        fgets(bname, sizeof(bname), stdin);
-        bname[strcspn(bname, "\n")] = 0; // Remove newline
 
-        for (int i = 0; i < count; i++)
-        {
-            if (strcasecmp(book[i].name, bname) == 0)
-            {
-                for (int j = i; j < count - 1; j++)
-                {
-                    book[j] = book[j + 1];
-                }
-                count--;
-                book = (library *)realloc(book, count * sizeof(library));
-                if (book == NULL && count > 0)
-                {
-                    printf("Memory allocation failed!\n");
-                    exit(1);
-                }
-                printf("\n\t\tBook removed successfully.\n");
-
-                // Save to file after removal
-                saveToFile();
-                return;
-            }
-        }
-        printf("\n\t\tBook not found.");
-    }
-    else
+    if (!found)
     {
-        printf("\n\t\tInvalid choice. Please enter 1 or 2.\n");
+        printf("\nBook with ID %d not found.\n", id);
     }
 }
 
 // Function to update a book by name
 void updateBook()
 {
-    char bname[50];
-    printf("\n\n\t\tEnter Book Name to Update: ");
-    getchar(); // Clear newline character from buffer
-    fgets(bname, sizeof(bname), stdin);
-    bname[strcspn(bname, "\n")] = 0; // Remove newline
+    int id, found = 0;
+    printf("Enter Book ID to update: ");
+    scanf("%d", &id);
 
     for (int i = 0; i < count; i++)
     {
-        if (strcasecmp(book[i].name, bname) == 0)
+        if (book[i].id == id)
         {
-            printf("\n\t\t*** Update Book Details ***");
-            printf("\n\t\t* Enter New Book Id: ");
-            scanf("%d", &book[i].id);
-            printf("\t\t* Enter New Book Name: ");
-            getchar(); // Clear newline character from buffer
-            fgets(book[i].name, sizeof(book[i].name), stdin);
-            book[i].name[strcspn(book[i].name, "\n")] = 0; // Remove newline
-            printf("\t\t* Enter New Book Author: ");
-            fgets(book[i].author, sizeof(book[i].author), stdin);
-            book[i].author[strcspn(book[i].author, "\n")] = 0; // Remove newline
-            printf("\t\t* Enter New Book Genre: ");
-            fgets(book[i].details.genre, sizeof(book[i].details.genre), stdin);
-            book[i].details.genre[strcspn(book[i].details.genre, "\n")] = 0; // Remove newline
-            printf("\t\t* Enter New Book Year: ");
+            found = 1;
+            printf("\nEnter new details:\n");
+            printf("Title: ");
+            scanf(" %[^\n]s", book[i].name);
+            printf("Author: ");
+            scanf(" %[^\n]s", book[i].author);
+            printf("Genre: ");
+            scanf(" %[^\n]s", book[i].details.genre);
+            printf("Year: ");
             scanf("%d", &book[i].details.year);
+            printf("Status: ");
+            scanf(" %[^\n]s", book[i].status);
 
-            // Save to file after update
-            saveToFile();
-            return;
+            printf("\nBook with ID %d updated successfully.\n", id);
+            saveToFile(); // Save updated data
+            break;
         }
     }
-    printf("\n\t\tBook not found.");
+
+    if (!found)
+    {
+        printf("\nBook with ID %d not found.\n", id);
+    }
 }
 
+// Function to save all books to a text file
 // Function to save all books to a text file
 void saveToFile()
 {
     FILE *file = fopen("library.txt", "w");
     if (file == NULL)
     {
-        perror("\nError opening file");
+        printf("\nError saving library data to file!\n");
         return;
     }
 
-    // Write the heading with proper alignment
-    fprintf(file, "%-5s%-30s%-30s%-20s%-10s%-10s\n", "Id", "Title", "Author", "Genre", "Year", "Status");
+    // Write header for clarity (optional)
+    fprintf(file, "Id\tTitle\tAuthor\tGenre\tYear\tStatus\n");
 
-    // Write the book details with proper alignment
     for (int i = 0; i < count; i++)
     {
-        fprintf(file, "%-5d%-30s%-30s%-20s%-10d%-10s\n", book[i].id, book[i].name, book[i].author,
-                book[i].details.genre, book[i].details.year, book[i].status);
+        fprintf(file, "%d\t%s\t%s\t%s\t%d\t%s\n",
+                book[i].id, book[i].name, book[i].author,
+                book[i].details.genre, book[i].details.year,
+                book[i].status);
     }
+
     fclose(file);
-    printf("\nBooks saved successfully in library.txt.\n");
+    printf("\nLibrary data saved successfully to library.txt.\n");
 }
 
 // Function to load all books from a text file
@@ -338,25 +307,28 @@ void loadFromFile()
     FILE *file = fopen("library.txt", "r");
     if (file == NULL)
     {
-        printf("\nNo existing library data found.");
+        printf("\nNo existing library data found. Starting fresh.\n");
         return;
     }
 
-    // Skip the header line
+    // Read the first line (header) and ignore it
     char buffer[256];
     fgets(buffer, sizeof(buffer), file);
 
     while (fgets(buffer, sizeof(buffer), file))
     {
         library tempBook;
-        if (sscanf(buffer, "%d\t%49[^\t]\t%49[^\t]\t%49[^\t]\t%d\t%9s",
-                   &tempBook.id, tempBook.name, tempBook.author, tempBook.details.genre,
-                   &tempBook.details.year, tempBook.status) == 6)
+
+        // Match the exact format used in saveToFile
+        if (sscanf(buffer, "%d\t%49s\t%49s\t%49s\t%d\t%49s",
+                   &tempBook.id, tempBook.name, tempBook.author,
+                   tempBook.details.genre, &tempBook.details.year,
+                   tempBook.status) == 6)
         {
             library *temp = realloc(book, (count + 1) * sizeof(library));
             if (temp == NULL)
             {
-                printf("Memory allocation failed!\n");
+                printf("\nMemory allocation failed while loading books!");
                 free(book);
                 fclose(file);
                 exit(1);
@@ -364,10 +336,14 @@ void loadFromFile()
             book = temp;
             book[count++] = tempBook;
         }
+        else
+        {
+            printf("\nError parsing line: %s", buffer);
+        }
     }
 
     fclose(file);
-    printf("\nBooks loaded successfully from library.txt.");
+    printf("\nBooks loaded successfully from library.txt. Total books: %d\n", count);
 }
 
 // Function to exit the program
