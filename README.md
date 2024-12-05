@@ -1,5 +1,5 @@
 # C-programming-project
-BTech project in E-library management, done in C programming
+### BTech project in E-library management, done in C programming
 
 This is a terminal based application designed to efficiently manage library resources using C programming.
 
